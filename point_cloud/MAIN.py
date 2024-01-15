@@ -792,6 +792,8 @@ def find_closest_checkpoint_new(position, checkpoints):
 
     return next_checkpoint
 
+
+
 def find_closest_checkpoint(position, checkpoints):
     """
     Finds the closest checkpoint to the current position.
