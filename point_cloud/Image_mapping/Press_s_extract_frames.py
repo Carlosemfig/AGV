@@ -17,6 +17,10 @@ if not cap.isOpened():
 existing_frames = [int(fname.split('_')[1].split('.')[0]) for fname in os.listdir(output_folder) if fname.startswith('frame_')]
 num = max(existing_frames) + 1 if existing_frames else 0
 
+
+# Set the window size
+cv2.namedWindow('Frame', cv2.WINDOW_NORMAL)
+
 while cap.isOpened():
     # Read a frame from the video
     ret, frame = cap.read()

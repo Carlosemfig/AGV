@@ -3,7 +3,7 @@ import open3d as o3d
 import numpy as np
 from sklearn.cluster import DBSCAN
 
-point_cloud = m.load_pc("bg_subtract_one_only.pcd")
+point_cloud = m.load_pc("subtraction_result.pcd")
 
 point_cloud_array = m.pc_to_array(point_cloud)
 

@@ -88,24 +88,14 @@ def calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matri
 
     return pixel_coordinates_array
 
-Lidar_1=[0, 0, 0]
-Lidar_2=[1.38, 1.11, 0]
-Lidar_3=[2.05, -0.95, 0]
- 
-Cam_1=[0.05, 0.89, -0.17]
-Cam_2=[-0.03, -0.81, -0.17]
-Cam_3=[2.80, 0.95, -0.17]
- 
-Peluche=[2.31, -0.29, -0.10]
+
+Lidar_1=map_to_pixel((0,0,0),extrinsic_matrix,intrinsic_matrix)
+Lidar_2 = map_to_pixel((1.25, 2.22, -0.4), extrinsic_matrix, intrinsic_matrix)
+Camera_1 = map_to_pixel((1.94, 2.22, -0.18), extrinsic_matrix, intrinsic_matrix)
+Random_object = map_to_pixel((2.65, 0.35, 0), extrinsic_matrix, intrinsic_matrix)
 
 
-first=map_to_pixel(Lidar_2,extrinsic_matrix,intrinsic_matrix)
-second = map_to_pixel(Cam_3, extrinsic_matrix, intrinsic_matrix)
-third = map_to_pixel(Peluche, extrinsic_matrix, intrinsic_matrix)
-fourth = map_to_pixel(Lidar_3, extrinsic_matrix, intrinsic_matrix)
-
-
-center = Lidar_1
+center = (0, 0, 0)
 side_length = 0.2
 pixel_coordinates_array = calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matrix)
 
@@ -113,7 +103,7 @@ pixel_coordinates_array = calculate_cube_vertices(center, side_length,extrinsic_
 # Load the image to visualize the resulting pixels
 #in red the known points
 #in green the cube points
-image_path = "cam_2_extrinsic.jpg"
+image_path = "output_frame_2.jpg"
 output_frame = cv2.imread(image_path)
 output_frame_copy = output_frame.copy()
 
@@ -125,11 +115,10 @@ for pixel_coordinates in pixel_coordinates_array:
     cv2.circle(output_frame, (x, y), 5, (0, 255, 0), -1)  # Green circle with radius 5
 
 #Draw the red points in the image
-red_circles = [first, second, third, fourth]
+red_circles = [Lidar_1, Lidar_2, Camera_1, Random_object]
 for pixel_coordinates in red_circles:
     # Round to integers as pixel coordinates must be integers
     x, y = map(int, pixel_coordinates)
-    print("COORDENADAS",x,y)
     cv2.circle(output_frame, (x, y), 5, (0, 0, 255), -1)  # Red circle with radius 5
 
 
@@ -150,11 +139,101 @@ cv2.rectangle(output_frame, (min_x, min_y), (max_x, max_y), (0, 255, 0), thickne
 rectangle_segmentation = output_frame_copy[min_y:max_y, min_x:max_x]
 #cv2.imwrite('Rectangle_segmentation.png', rectangle_segmentation)
 
+import cv2
+import argparse
+import numpy as np
+
+def yolo_object_detection(image_path, config, weights, classes_file):
+    image=image_path
+
+    Width = image.shape[1]
+    Height = image.shape[0]
+    scale = 0.00392
+
+    classes = None
+    with open(classes_file, 'r') as f:
+        classes = [line.strip() for line in f.readlines()]
+
+    COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
+
+    net = cv2.dnn.readNet(weights, config)
+
+    blob = cv2.dnn.blobFromImage(image, scale, (416, 416), (0, 0, 0), True, crop=False)
+    net.setInput(blob)
+
+    def get_output_layers(net):
+        layer_names = net.getLayerNames()
+        try:
+            output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+        except:
+            output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+        return output_layers
+
+    def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
+        label = str(classes[class_id])
+        color = COLORS[class_id]
+        cv2.rectangle(img, (x, y), (x_plus_w, y_plus_h), color, 2)
+        cv2.putText(img, label, (x-10, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+    outs = net.forward(get_output_layers(net))
+
+    class_ids = []
+    confidences = []
+    boxes = []
+    conf_threshold = 0.5
+    nms_threshold = 0.4
+
+    for out in outs:
+        for detection in out:
+            scores = detection[5:]
+            class_id = np.argmax(scores)
+            confidence = scores[class_id]
+            if confidence > 0.5:
+                center_x = int(detection[0] * Width)
+                center_y = int(detection[1] * Height)
+                w = int(detection[2] * Width)
+                h = int(detection[3] * Height)
+                x = center_x - w / 2
+                y = center_y - h / 2
+                class_ids.append(class_id)
+                confidences.append(float(confidence))
+                boxes.append([x, y, w, h])
+
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
+
+    for i in indices:
+        try:
+            box = boxes[i]
+        except:
+            i = i[0]
+            box = boxes[i]
+
+        x = box[0]
+        y = box[1]
+        w = box[2]
+        h = box[3]
+        draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+
+    return image
+
+# Example usage:
+
+config = r"C:\Users\hvendas\Desktop\YOLO_V3\object-detection-opencv-master\yolov3.cfg"
+weights = r"C:\Users\hvendas\Desktop\YOLO_V3\object-detection-opencv-master\yolov3.weights"
+classes_file = r"C:\Users\hvendas\Desktop\YOLO_V3\object-detection-opencv-master\yolov3.txt"
+
+result_image = yolo_object_detection(rectangle_segmentation, config, weights, classes_file)
+
+# Display or save the result
+cv2.imshow("Object Detection on Rectangle Segmentation", result_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+
 
 # Display the image with drawn points
-# Resize the image with drawn points
-resized_frame = cv2.resize(output_frame, (1200, 675))  # Replace new_width and new_height with your desired dimensions
-
-cv2.imshow("Output Frame", resized_frame)
+cv2.imshow("Output Frame", output_frame)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

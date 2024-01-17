@@ -7,10 +7,9 @@ from sklearn.neighbors import LocalOutlierFactor
 import open3d as o3d
 import matplotlib.pyplot as plt
 
-voxel_size = 0.1
 
 # Load voxel grid from the saved file
-loaded_voxel_grid = o3d.io.read_voxel_grid("saved_voxel_grid.ply")
+loaded_voxel_grid = o3d.io.read_voxel_grid("bg_voxel_grid.ply")
 
 bg=loaded_voxel_grid
 
@@ -25,7 +24,7 @@ def voxel_centers(voxel_grid):
 
 """____________________obj_________________________"""
 #file_path_obj = r'C:\Users\hvendas\Desktop\agv-snr\data_dict_moving.pkl'
-file_path_obj = r'C:\Users\hvendas\Desktop\agv-snr\data_dict_track_1.pkl'
+file_path_obj = r'data_dict_foreground.pkl'
 
 # Load the data from the Pickle file
 with open(file_path_obj, 'rb') as file:
@@ -164,30 +163,6 @@ def is_point_inside_voxel(point, voxel_center, voxel_extent):
     return inside_voxel
 
 
-def points_outside_all_voxels(points, voxel_centers, voxel_extent):
-    """
-    Check if each point in an array is outside all voxels in a set.
-
-    Parameters:
-    - points (np.ndarray): Array of 3D points, each row representing [x, y, z]
-    - voxel_centers (np.ndarray): Array of voxel centers, each row representing [x, y, z]
-    - voxel_extent (float): Size of the voxel in each dimension
-
-    Returns:
-    - np.ndarray: Array of points that are not inside any voxel
-    """
-    points_outside_voxels = []
-
-    for point in points:
-        # Check if the point is inside any voxel
-        inside_any_voxel = any(is_point_inside_voxel(point, voxel_center, voxel_extent) for voxel_center in voxel_centers)
-
-        # If the point is not inside any voxel, add it to the result array
-        if not inside_any_voxel:
-            points_outside_voxels.append(point)
-
-    return np.array(points_outside_voxels)
-
 
 def points_outside_all_voxels(points, voxel_grid):
     """
@@ -253,6 +228,8 @@ m.visualize(pc_result)
 print("DONE")
 print("depois",len(result))
 
-path_file= r"C:\Users\hvendas\Desktop\GIT\app\point_cloud\bg_subtract_one_only.pcd"
-m.save_pc(pc_result,path_file)
+
+#path_file= r"subtraction_result.pcd"
+#m.save_pc(pc_result,path_file)
+
 

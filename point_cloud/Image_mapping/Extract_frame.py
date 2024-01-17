@@ -31,9 +31,9 @@ def extract_frame(video_path, frame_number, output_path):
     print(f"Frame {frame_number} extracted and saved to {output_path}.")
 
 # Specify the input video file, frame number, and output path
-video_path = r"output 2.avi"
+video_path = r"cam_3_extrinsic.avi"
 frame_number = 2
-output_path = "output_frame_2.jpg"
+output_path = "cam_3_extrinsic.jpg"
 
 # Call the function to extract the 100th frame
 extract_frame(video_path, frame_number, output_path)

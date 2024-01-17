@@ -1,21 +1,26 @@
 import cv2
 
+variable=1.5
 def mouse_click(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         pixel_value = img[y, x]
-        print(f"Clicked at coordinates (x={x}, y={y}). Pixel value: {pixel_value}")
+        print(f"Clicked at coordinates (x={variable*x}, y={variable*y}). Pixel value: {pixel_value}")
 
 # Load the image
-img = cv2.imread("output_frame_2.jpg")
+img = cv2.imread("cam_3_extrinsic.jpg")
 
 # Check if the image is loaded successfully
 if img is None:
     print("Error: Could not load the image.")
 else:
+    # Get the screen resolution
+    screen_resolution = (int(1920/variable),int(1080/variable))  # Replace with your actual screen resolution
+    print(screen_resolution)
+    # Resize the image to fit within the screen resolution
+    max_width, max_height = screen_resolution
+    if img.shape[1] > max_width or img.shape[0] > max_height:
+        img = cv2.resize(img, (max_width, max_height))
 
-    height, width, channels = img.shape
-    print(f"Image Resolution: {width} x {height}")
-    # Create a window and display the image
     cv2.imshow("Image Viewer", img)
 
     # Set the mouse callback function

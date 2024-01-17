@@ -24,26 +24,67 @@ print("Loaded dist:", dist)
 
 image_resolution=(1080, 1920)
 
+pixel_cam1=np.array([
+                         [242, 335],
+                         [362, 531],
+                         [1375, 406],
+                         [896, 506],
+                         
+                         
+                         ])
+pixel_cam2=np.array([
+                         [405, 607],
+                         [1726, 523],
+                         [1198, 685],
+                         [891, 705]
+                         
+                         
+                         
+                         ])
+pixel_cam3=np.array([
+                         [186, 544],
+                         [973, 588],
+                         [1297, 502],
+                         [1698, 600],
+                         [1836, 405]
+                         ])
 
+Lidar_1=[0, 0, 0]
+Lidar_2=[1.38, 1.11, 0]
+Lidar_3=[2.05, -0.95, 0]
+ 
+Cam_1=[0.05, 0.89, -0.17]
+Cam_2=[-0.03, -0.81, -0.17]
+Cam_3=[2.80, 0.95, -0.17]
+ 
+Peluche=[2.31, -0.29, -0.10]
 
-points_world_cam2 = np.array([
-                         [1.94, 2.22, -0.18],
-                         [2.65, 0.35, 0],
-                         [0, 0, 0,],
-                         [1.25, 2.2, -0.4]
+world_cam1=np.array([
+                         Lidar_2,
+                         Cam_3,
+                         Lidar_3,
+                         Peluche,
                          
                          ])
 
-
-
-
-points_cam2=np.array([
-                         [957, 658],
-                         [1530, 563],
-                         [224, 455],
-                         [757, 730]
+world_cam2=np.array([
+                         Lidar_2,
+                         Lidar_3,
+                         Peluche,
+                         Cam_3
+                         
                          
                          ])
+
+world_cam3=np.array([
+                         Peluche,
+                         Cam_2,
+                         Lidar_1,
+                         Cam_1,
+                         Lidar_2
+                         ])
+
+
 
 
 """from scipy.spatial.transform import Rotation
@@ -68,7 +109,7 @@ def get_extrinsic_matrix(points_world,points_image,intrinsic_matrix):
     imagePoints = points_image.astype(np.float32)
     #print("IMAGE POINTS", imagePoints)
     #print("OBJECT POINTS",objectPoints)
-    _,rvecs,tvecs = cv2.solvePnP(objectPoints, imagePoints, cam_matrix, distCoeffs=None, flags=cv2.SOLVEPNP_AP3P )
+    _,rvecs,tvecs = cv2.solvePnP(objectPoints, imagePoints, cam_matrix, distCoeffs=None, flags=cv2.SOLVEPNP_P3P )
     #print("RVEC",rvecs)
     rotation_matrix, _ = cv2.Rodrigues(rvecs)
     extrinsic_matrix = np.hstack((rotation_matrix, tvecs))
@@ -78,10 +119,10 @@ def get_extrinsic_matrix(points_world,points_image,intrinsic_matrix):
 
 
 intrinsic_matrix=cameraMatrix
-extrinsic_matrix=get_extrinsic_matrix(points_world_cam2,points_cam2,intrinsic_matrix)
+extrinsic_matrix=get_extrinsic_matrix(world_cam2,pixel_cam2,intrinsic_matrix)
 
-print("World Points",points_world_cam2)
-print("Pixel Points",points_cam2)
+print("World Points",world_cam2)
+print("Pixel Points",pixel_cam2)
 print("Extrinsic matrix:", extrinsic_matrix)
 
 
