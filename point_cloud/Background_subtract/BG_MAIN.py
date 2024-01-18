@@ -270,3 +270,28 @@ def voxel_centers(voxel_grid):
     # Reshape the array to have separate columns for x, y, and z coordinates
     voxel_centers_reshaped = grid_indices.reshape(-1, 3)
     return voxel_centers_reshaped
+
+
+def subtract_bg(obj,bg_voxel,treshold):
+    """
+    A function that given a array and a voxel model of the background,
+    Returns the array resulting from the subtraction.
+
+    Parameters:
+    obj(np.array)
+    bg.voxel(voxel_grid)
+    treshold (float) - the margin to erase the flor, the bigger the higher the floor is erased.
+
+    returns:
+    Result (np.array)
+    """
+
+    obj=remove_duplicate_points(obj)
+
+    min_and_max_point_list=calculateMinAndMaxPoints(obj)
+
+    groundThresholder = min_and_max_point_list[5] + treshold
+
+    obj = remove_ground_plane(obj,groundThresholder)
+    result = points_outside_all_voxels(obj, bg_voxel)
+    return result

@@ -8,7 +8,7 @@ import open3d as o3d
 import matplotlib.pyplot as plt
 import BG_MAIN as b
 
-
+treshold=0.17
 # Load voxel grid from the saved file
 loaded_voxel_grid = o3d.io.read_voxel_grid("saved_voxel_grid.ply")
 
@@ -22,10 +22,6 @@ file_path_obj = r'data_dict_foreground.pkl'
 obj=b.loadFileToArray(file_path_obj)
 
 
-
-obj=b.remove_duplicate_points(obj)
-
-
 """-------------data processing_________________________"""
 
 vox_scale=b.voxel_range(bg)
@@ -34,9 +30,6 @@ arr_scale=b.array_range(obj)
 
 
 resc_obj=b.rescale_array(bg,obj)
-
-
-
 
 
 pc_obj=m.array_to_pc(resc_obj)
@@ -66,14 +59,14 @@ o3d.visualization.draw_geometries([bg])
 #visualize the result.
 print("antes",len(obj))
 
-result = b.points_outside_all_voxels(obj, bg)
+result=b.subtract_bg(obj,bg,treshold)
 pc_result=m.array_to_pc(result)
 m.visualize(pc_result)
 print("DONE")
 print("depois",len(result))
 
 
-#path_file= r"subtraction_result.pcd"
-#m.save_pc(pc_result,path_file)
+path_file= r"subtraction_result.pcd"
+m.save_pc(pc_result,path_file)
 
 

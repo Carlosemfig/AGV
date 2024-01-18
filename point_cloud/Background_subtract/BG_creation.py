@@ -24,16 +24,16 @@ merged_array = b.loadFileToArray(file_path)
 #print(len(merged_array))
 
 #Ndarray surface segmentation
-segmentationArray = b.pointSegmentation(merged_array)
+#segmentationArray = b.pointSegmentation(merged_array)
 
 #Calculate Minimum and Maximum value points for Z,Y and Z dimensions
-minAndMaxPointList = b.calculateMinAndMaxPoints(segmentationArray)
+minAndMaxPointList = b.calculateMinAndMaxPoints(merged_array)
 
 #Define the value in the Z dimension in wich all points below will be deleted
 groundThresholder = minAndMaxPointList[5] + treshold
 
 #Remove duplicate points
-segmentationArrayNoDup = b.remove_duplicate_points(segmentationArray)
+segmentationArrayNoDup = b.remove_duplicate_points(merged_array)
 
 #Remove ground plane points
 segmentationArrayNoGroundPlane = b.remove_ground_plane(segmentationArrayNoDup,groundThresholder)
