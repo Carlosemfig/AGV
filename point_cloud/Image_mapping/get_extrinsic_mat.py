@@ -24,14 +24,7 @@ print("Loaded dist:", dist)
 
 image_resolution=(1080, 1920)
 
-pixel_cam1=np.array([
-                         [242, 335],
-                         [362, 531],
-                         [1375, 406],
-                         [896, 506],
-                         
-                         
-                         ])
+
 pixel_cam2=np.array([
                          [405, 607],
                          [1726, 523],
@@ -61,12 +54,22 @@ Peluche=[2.31, -0.29, -0.10]
 
 world_cam1=np.array([
                          Lidar_2,
-                         Cam_3,
+
                          Lidar_3,
+                         Cam_3,
                          Peluche,
+                         ])
+pixel_cam1=np.array([
+                         [225, 335],
+                         
+                         [1378, 397],
+                         [364, 528],
+                         [895, 528]
+                         
+                         
+                         
                          
                          ])
-
 world_cam2=np.array([
                          Lidar_2,
                          Lidar_3,
@@ -119,7 +122,7 @@ def get_extrinsic_matrix(points_world,points_image,intrinsic_matrix):
 
 
 intrinsic_matrix=cameraMatrix
-extrinsic_matrix=get_extrinsic_matrix(world_cam2,pixel_cam2,intrinsic_matrix)
+extrinsic_matrix=get_extrinsic_matrix(world_cam1,pixel_cam1,intrinsic_matrix)
 
 print("World Points",world_cam2)
 print("Pixel Points",pixel_cam2)
@@ -127,6 +130,6 @@ print("Extrinsic matrix:", extrinsic_matrix)
 
 
 # Save the extrinsic matrix for later use
-pickle.dump(extrinsic_matrix, open("extrinsic_matrix_cam2.pkl", "wb"))
+pickle.dump(extrinsic_matrix, open("extrinsic_matrix_cam1.pkl", "wb"))
 
 

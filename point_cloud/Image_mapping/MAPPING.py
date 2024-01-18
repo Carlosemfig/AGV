@@ -12,7 +12,7 @@ with open("cameraMatrix.pkl", "rb") as file:
 with open("dist.pkl", "rb") as file:
     dist = pickle.load(file)
 
-with open("extrinsic_matrix_cam2.pkl", "rb") as file:
+with open("extrinsic_matrix_cam1.pkl", "rb") as file:
     extrinsic_matrix = pickle.load(file)
 
 # Now you can use cameraMatrix and dist in your code
@@ -105,7 +105,7 @@ third = map_to_pixel(Peluche, extrinsic_matrix, intrinsic_matrix)
 fourth = map_to_pixel(Lidar_3, extrinsic_matrix, intrinsic_matrix)
 
 
-center = Lidar_1
+center = Peluche
 side_length = 0.2
 pixel_coordinates_array = calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matrix)
 
@@ -113,7 +113,7 @@ pixel_coordinates_array = calculate_cube_vertices(center, side_length,extrinsic_
 # Load the image to visualize the resulting pixels
 #in red the known points
 #in green the cube points
-image_path = "cam_2_extrinsic.jpg"
+image_path = "cam_1_extrinsic.jpg"
 output_frame = cv2.imread(image_path)
 output_frame_copy = output_frame.copy()
 
