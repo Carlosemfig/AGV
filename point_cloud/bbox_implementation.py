@@ -54,6 +54,56 @@ def min_max_z_coordinates(data_array):
     middle_point = (min_z + max_z) / 2.0
     return distance,middle_point
 
+
+def find_rectangle_coordinates(points):
+    # Use the provided function to get unique 2D points
+    unique_projected_points = project_and_remove_duplicates(points)
+
+    # Find minimum and maximum x, y coordinates from the unique projected points
+    x_min = np.min(unique_projected_points[:, 0])
+    x_max = np.max(unique_projected_points[:, 0])
+    y_min = np.min(unique_projected_points[:, 1])
+    y_max = np.max(unique_projected_points[:, 1])
+
+    # Construct the rectangle coordinates
+    rectangle_coordinates = [(x_min, y_min, 0), (x_max, y_max, 0)]
+
+    return rectangle_coordinates
+
+def find_rectangle_center(rectangle_coordinates):
+    # Extract x, y coordinates of the two corners
+    x1, y1, _ = rectangle_coordinates[0]
+    x2, y2, _ = rectangle_coordinates[1]
+
+    # Calculate the center coordinates
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2
+    center_z = 0  # Since the rectangle is in the z=0 plane
+
+    # Return the center coordinates
+    return (center_x, center_y, center_z)
+
+def find_rectangle_directions(rectangle_coordinates):
+    # Extract x, y coordinates of the two corners
+    x1, y1, _ = rectangle_coordinates[0]
+    x2, y2, _ = rectangle_coordinates[1]
+
+    # Calculate the lengths of the sides of the rectangle
+    length_x = abs(x2 - x1)
+    length_y = abs(y2 - y1)
+
+    # Determine the longer and shorter sides
+    if length_x >= length_y:
+        # X direction is longer or equal
+        x_direction = np.array([(x2 - x1) / length_x, (y2 - y1) / length_x, 0])
+        y_direction = np.array([-(y2 - y1) / length_x, (x2 - x1) / length_x, 0])
+    else:
+        # Y direction is longer
+        x_direction = np.array([(y2 - y1) / length_y, -(x2 - x1) / length_y, 0])
+        y_direction = np.array([(x2 - x1) / length_y, (y2 - y1) / length_y, 0])
+
+    return x_direction, y_direction
+
 def bbox_implementation(cube):
 
     rectangle=project_and_remove_duplicates(cube)
@@ -118,6 +168,9 @@ def centroid_and_box(points,cluster_labels,num_clusters):
         #print(cluster_labels)
         object_points = points[cluster_labels == cluster_id]
         centroid,extent,rot_mat=bbox_implementation(object_points)
+        print("centroid",centroid)
+        print("extent",extent)
+        print("rot_mat",rot_mat)
        
     
 

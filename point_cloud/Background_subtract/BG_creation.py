@@ -9,14 +9,14 @@ import matplotlib.pyplot as plt
 from pygroundsegmentation import GroundPlaneFitting
 import BG_MAIN as b
 
-voxel_size = 0.3 #decreasing this value will make the subtraction process harder
-treshold=0.17 #decreasing this value more will remove less of the flor.
+voxel_size = 0.25 #decreasing this value will make the subtraction process harder
+treshold=0.42 #decreasing this value more will remove less of the flor.
 
 
 
 """_______bg______"""
 
-file_path = r'data_dict_background.pkl'
+file_path = r'data_dict_background_model.pkl'
 
 
 #Load background model file to ndarray
@@ -28,6 +28,7 @@ merged_array = b.loadFileToArray(file_path)
 
 #Calculate Minimum and Maximum value points for Z,Y and Z dimensions
 minAndMaxPointList = b.calculateMinAndMaxPoints(merged_array)
+print("minimum point",minAndMaxPointList[5])
 
 #Define the value in the Z dimension in wich all points below will be deleted
 groundThresholder = minAndMaxPointList[5] + treshold
@@ -56,4 +57,4 @@ bg=b.voxelization(segmentationArrayNoGroundPlane,size=voxel_size)
 o3d.visualization.draw_geometries([bg])
 
 # Save voxel grid to a file
-o3d.io.write_voxel_grid("saved_voxel_grid.ply", bg)
+o3d.io.write_voxel_grid("saved_voxel_grid_new.ply", bg)

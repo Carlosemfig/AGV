@@ -1,5 +1,6 @@
 import MAIN as m
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 space=0.1
@@ -17,6 +18,14 @@ l9=m.create_straight_line((24,14),(28,14),space)
 l10=m.create_straight_line((24,16),(28,16),space)
 
 final_line=m.merge_arrays(l1,l2,l3,l4,l5,l6,l7,l8,l9,l10)
+
+
+# Extract x and y coordinates
+x = final_line[:, 0]
+y = final_line[:, 1]
+
+
+
 
 
 #Converts the array of the combination of the lines into walls
@@ -83,3 +92,21 @@ t22=m.create_straight_line((18,6),(18,10),space)
 Parts_T1=m.merge_arrays(t1,t2,t3)
 Parts_T2=m.merge_arrays(t1,t21,t22)
 
+x_p=Parts_T1[:, 0]
+y_p=Parts_T1[:, 1]
+
+x_d=D1_parts[:, 0]
+y_d=D1_parts[:, 1]
+# Plotting the points
+plt.scatter(x, y, c='blue', marker='o', s=20, label='Points')
+plt.scatter(x_p, y_p, c='red', marker='o', s=20, label='Points')
+plt.scatter(x_d, y_d, c='green', marker='o', s=20, label='Points')
+
+"""# Add labels and a legend
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.title('2D Array of Points')
+plt.legend()
+
+# Display the plot
+plt.show()"""

@@ -12,7 +12,7 @@ with open("cameraMatrix.pkl", "rb") as file:
 with open("dist.pkl", "rb") as file:
     dist = pickle.load(file)
 
-with open("extrinsic_matrix_cam1.pkl", "rb") as file:
+with open("extrinsic_matrix_cam3.pkl", "rb") as file:
     extrinsic_matrix = pickle.load(file)
 
 # Now you can use cameraMatrix and dist in your code
@@ -25,8 +25,38 @@ print("Loaded Extrinsic Matrix",extrinsic_matrix)
 image_resolution=(1080, 1920)
 #image_resolution=(640,360)
 
+Lidar_1=[0, 0, 0]
+Lidar_2=[1.38, 1.11, 0]
+Lidar_3=[2.05, -0.95, 0]
+ 
+Cam_1=[0.05, 0.89, -0.17]
+Cam_2=[-0.03, -0.81, -0.17]
+Cam_3=[2.80, 0.95, -0.17]
+ 
+Peluche=[2.31, 0, -0.10]
+
+
+
+
+center = Peluche
+side_length = 0.3
+
+
+
 
 def map_to_pixel(map_coordinates, extrinsic_matrix, cam_matrix):
+    """
+    Comverts world coordinates to pixel_coordinates.
+
+    Param:
+    Map_coordinates(x,y,z): The spacial coordinates of one of the coorners of the bounding boxes
+    Extrinsic_matrix(np.array):Resulting from the camera calibration
+    Intrinsic_matrix(np_array):Resulting from the camera calibration
+    
+
+    Returns:
+    Pixel_coordinates_homogeneus(x,y): The coordinates of the pixel that corresponds to the spacial point given as the map_coordinates.
+    """
     # Add a row [0, 0, 0, 1] to map_coordinates to make it a 4x1 matrix
 
     
@@ -58,11 +88,27 @@ def map_to_pixel(map_coordinates, extrinsic_matrix, cam_matrix):
 
     return pixel_coordinates_homogeneous
 
-def calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matrix):
+
+
+"""
+
+first=map_to_pixel(Lidar_1,extrinsic_matrix,intrinsic_matrix)
+second = map_to_pixel(Cam_2, extrinsic_matrix, intrinsic_matrix)
+third = map_to_pixel(Peluche, extrinsic_matrix, intrinsic_matrix)
+fourth = map_to_pixel(Cam_1, extrinsic_matrix, intrinsic_matrix)
+"""
+
+
+def get_cube_vertices(center, side_length):
     """
-    This function should return the value of the pixels corresponding to the vertices of a cube:
-    Centered in center and 
-    with side lenght= side_lenght
+    Returns the vertices coordinates of a cube with given coordinates. This function is being used for visualization purposes.
+
+    Param
+    center(x,y,z) the spacial corrdinates of the cube center
+    side_lenght (float) ist the lenght of the side of the cube
+    
+    Returns
+    vertices(np.array) - with the 8 vertices of the cube in the (x,y,z) format.
     
     
     """
@@ -79,7 +125,24 @@ def calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matri
         [x_c + h, y_c + h, z_c + h],  # Vertex 6
         [x_c - h, y_c + h, z_c + h]   # Vertex 7
     ])
+    return vertices
 
+vertices=get_cube_vertices(center,side_length)
+
+def vertices_to_pixels(vertices,extrinsic_matrix,intrinsic_matrix):
+    """
+    Transforms the spacial coordinates of the vetices points to pixel coordinates in the image.
+
+    Param
+    vertices(np.array) an array with the box vertices in spacial coordinates(x,y,z)
+    Extrinsic_matrix(np.array):Resulting from the camera calibration
+    Intrinsic_matrix(np_array):Resulting from the camera calibration
+
+    returns:
+    pixel_coordinates_array(list): is a list containing the pixel coordinates (x,y) for each given vertice (8 values).
+    
+    
+    """
     pixel_coordinates_array = []
     for vertex in vertices:
         # Map each vertex to pixel coordinates for camera 2
@@ -88,34 +151,17 @@ def calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matri
 
     return pixel_coordinates_array
 
-Lidar_1=[0, 0, 0]
-Lidar_2=[1.38, 1.11, 0]
-Lidar_3=[2.05, -0.95, 0]
- 
-Cam_1=[0.05, 0.89, -0.17]
-Cam_2=[-0.03, -0.81, -0.17]
-Cam_3=[2.80, 0.95, -0.17]
- 
-Peluche=[2.31, -0.29, -0.10]
 
-
-first=map_to_pixel(Lidar_2,extrinsic_matrix,intrinsic_matrix)
-second = map_to_pixel(Cam_3, extrinsic_matrix, intrinsic_matrix)
-third = map_to_pixel(Peluche, extrinsic_matrix, intrinsic_matrix)
-fourth = map_to_pixel(Lidar_3, extrinsic_matrix, intrinsic_matrix)
-
-
-center = Peluche
-side_length = 0.2
-pixel_coordinates_array = calculate_cube_vertices(center, side_length,extrinsic_matrix,intrinsic_matrix)
+pixel_coordinates_array = vertices_to_pixels(vertices,extrinsic_matrix,intrinsic_matrix)
 
 
 # Load the image to visualize the resulting pixels
 #in red the known points
 #in green the cube points
-image_path = "cam_1_extrinsic.jpg"
+image_path = "cam_3_extrinsic.jpg"
 output_frame = cv2.imread(image_path)
-output_frame_copy = output_frame.copy()
+output_frame_copy = cv2.imread(image_path)
+print(type(output_frame))
 
 
 # Draw green points on the image
@@ -124,7 +170,7 @@ for pixel_coordinates in pixel_coordinates_array:
     x, y = map(int, pixel_coordinates)
     cv2.circle(output_frame, (x, y), 5, (0, 255, 0), -1)  # Green circle with radius 5
 
-#Draw the red points in the image
+"""#Draw the red points in the image
 red_circles = [first, second, third, fourth]
 for pixel_coordinates in red_circles:
     # Round to integers as pixel coordinates must be integers
@@ -132,25 +178,53 @@ for pixel_coordinates in red_circles:
     print("COORDENADAS",x,y)
     cv2.circle(output_frame, (x, y), 5, (0, 0, 255), -1)  # Red circle with radius 5
 
-
+"""
 def find_min_max_coordinates(points):
+    """
+    Funstion to find the min and max bound in both direction to include all the pixels that corresponds to the vertices of the box.
+    Param:
+    points(list): is a list containing the pixel coordinates (x,y) for each given vertice (8 values).
+
+    Returns:
+    min_x, max_x, min_y, max_y(int): the min and max bounds in both direction.
+    
+    """
     min_x = int(np.min([point[0] for point in points]))
     max_x = int(np.max([point[0] for point in points]))
     min_y = int(np.min([point[1] for point in points]))
     max_y = int(np.max([point[1] for point in points]))
     return min_x, max_x, min_y, max_y
 
-# Draw a green rectangle on the image
+
 min_x, max_x, min_y, max_y = find_min_max_coordinates(pixel_coordinates_array)
-cv2.rectangle(output_frame, (min_x, min_y), (max_x, max_y), (0, 255, 0), thickness=2)
+
+def segment_image(image, min_x, max_x, min_y, max_y):
+    # Check if the image is not None
+    if image is not None:
+        # Ensure none of the values is equal to 0
+        min_x = max(1, min_x)
+        min_y = max(1, min_y)
+
+        # Ensure max values are within the image dimensions
+        max_x = min(max_x, image.shape[1] - 1)
+        max_y = min(max_y, image.shape[0] - 1)
+
+        # Crop the image
+        rectangle_segmentation = image[min_y:max_y, min_x:max_x]
+
+        return rectangle_segmentation
 
 
 
+
+
+print("coordinates",min_x,max_x,min_y,max_y)
 # Extract the region inside the rectangle
-rectangle_segmentation = output_frame_copy[min_y:max_y, min_x:max_x]
-#cv2.imwrite('Rectangle_segmentation.png', rectangle_segmentation)
+segmented_image=segment_image(output_frame_copy,min_x,max_x,min_y,max_y)
+cv2.imwrite('Rectangle_segmentation.png', segmented_image)
 
 
+cv2.rectangle(output_frame, (min_x, min_y), (max_x, max_y), (0, 255, 0), thickness=2)
 # Display the image with drawn points
 # Resize the image with drawn points
 resized_frame = cv2.resize(output_frame, (1200, 675))  # Replace new_width and new_height with your desired dimensions

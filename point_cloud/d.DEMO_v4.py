@@ -3,6 +3,7 @@ import Create_map as b
 
 bg=b.Background
 global_path=b.D1_parts
+print(global_path)
 #global_path=b.Parts_T1
 
 robot=m.create_cubic_object((27,15),0.8,0.5,0.1)

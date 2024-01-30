@@ -25,22 +25,7 @@ print("Loaded dist:", dist)
 image_resolution=(1080, 1920)
 
 
-pixel_cam2=np.array([
-                         [405, 607],
-                         [1726, 523],
-                         [1198, 685],
-                         [891, 705]
-                         
-                         
-                         
-                         ])
-pixel_cam3=np.array([
-                         [186, 544],
-                         [973, 588],
-                         [1297, 502],
-                         [1698, 600],
-                         [1836, 405]
-                         ])
+
 
 Lidar_1=[0, 0, 0]
 Lidar_2=[1.38, 1.11, 0]
@@ -50,7 +35,7 @@ Cam_1=[0.05, 0.89, -0.17]
 Cam_2=[-0.03, -0.81, -0.17]
 Cam_3=[2.80, 0.95, -0.17]
  
-Peluche=[2.31, -0.29, -0.10]
+Peluche=[2.31, 0, -0.10]
 
 world_cam1=np.array([
                          Lidar_2,
@@ -70,25 +55,39 @@ pixel_cam1=np.array([
                          
                          
                          ])
+
 world_cam2=np.array([
                          Lidar_2,
                          Lidar_3,
-                         Peluche,
-                         Cam_3
+                         Cam_3,
+                         Peluche
+                         
+                         
+                         ])
+
+pixel_cam2=np.array([
+                         [405, 607],
+                         [1726, 523],
+                         [891, 705],
+                         [1198, 685]
+                         
                          
                          
                          ])
 
 world_cam3=np.array([
-                         Peluche,
                          Cam_2,
-                         Lidar_1,
                          Cam_1,
-                         Lidar_2
+                         Peluche,
+                         Lidar_1
                          ])
 
-
-
+pixel_cam3=np.array([
+                         [973, 588],
+                         [1698, 600],
+                         [186, 544],
+                         [1297, 502]
+                         ])
 
 """from scipy.spatial.transform import Rotation
 def get_intrinsic_matrix(f,image_resolution):
@@ -122,14 +121,14 @@ def get_extrinsic_matrix(points_world,points_image,intrinsic_matrix):
 
 
 intrinsic_matrix=cameraMatrix
-extrinsic_matrix=get_extrinsic_matrix(world_cam1,pixel_cam1,intrinsic_matrix)
+extrinsic_matrix=get_extrinsic_matrix(world_cam3,pixel_cam3,intrinsic_matrix)
 
-print("World Points",world_cam2)
-print("Pixel Points",pixel_cam2)
+print("World Points",world_cam3)
+print("Pixel Points",pixel_cam3)
 print("Extrinsic matrix:", extrinsic_matrix)
 
 
 # Save the extrinsic matrix for later use
-pickle.dump(extrinsic_matrix, open("extrinsic_matrix_cam1.pkl", "wb"))
+pickle.dump(extrinsic_matrix, open("extrinsic_matrix_cam3.pkl", "wb"))
 
 
