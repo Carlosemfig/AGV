@@ -28,65 +28,57 @@ image_resolution=(1080, 1920)
 
 
 Lidar_1=[0, 0, 0]
-Lidar_2=[1.38, 1.11, 0]
-Lidar_3=[2.05, -0.95, 0]
+Lidar_2=[1.29, 1.07, 0]
+Lidar_3=[1.99, -0.75, 0]
  
-Cam_1=[0.05, 0.89, -0.17]
-Cam_2=[-0.03, -0.81, -0.17]
-Cam_3=[2.80, 0.95, -0.17]
+Cam_1=[0, 0.89, -0.17]
+Cam_2=[0, -0.81, -0.17]
+Cam_3=[2.55, 0.95, -0.17]
  
 Peluche=[2.31, 0, -0.10]
-
-world_cam1=np.array([
+world_cam3=np.array([
                          Lidar_2,
-
-                         Lidar_3,
-                         Cam_3,
-                         Peluche,
+                         Cam_1,
+                         Cam_2,
+                         Lidar_1,
                          ])
-pixel_cam1=np.array([
-                         [225, 335],
+pixel_cam3=np.array([
+                         [1542.0, 208.5],
                          
-                         [1378, 397],
-                         [364, 528],
-                         [895, 528]
-                         
-                         
-                         
+                         [1425.0, 364.5],
+                         [687.0, 339.0],
+                         [1005.0, 265.5]
                          
                          ])
 
 world_cam2=np.array([
-                         Lidar_2,
-                         Lidar_3,
+                         Lidar_1,
                          Cam_3,
-                         Peluche
-                         
+                         Peluche,
+                         Lidar_2
                          
                          ])
 
 pixel_cam2=np.array([
-                         [405, 607],
-                         [1726, 523],
-                         [891, 705],
-                         [1198, 685]
-                         
-                         
+                         [0, 399.0],
+                         [1150.5, 676.5],
+                         [1467.0, 658.5],
+                         [646.5, 589.5]
                          
                          ])
 
-world_cam3=np.array([
-                         Cam_2,
-                         Cam_1,
-                         Peluche,
-                         Lidar_1
+world_cam1=np.array([
+                         Lidar_2,
+                         Cam_3,
+                         Lidar_3,
+                         Peluche
                          ])
 
-pixel_cam3=np.array([
-                         [973, 588],
-                         [1698, 600],
-                         [186, 544],
-                         [1297, 502]
+pixel_cam1=np.array([
+                         [79.5, 199.5],
+                         [207.0, 366.0],
+                         [1206.0, 250.5],
+                         [736.5, 327.0]
                          ])
 
 """from scipy.spatial.transform import Rotation
@@ -121,14 +113,14 @@ def get_extrinsic_matrix(points_world,points_image,intrinsic_matrix):
 
 
 intrinsic_matrix=cameraMatrix
-extrinsic_matrix=get_extrinsic_matrix(world_cam3,pixel_cam3,intrinsic_matrix)
+extrinsic_matrix=get_extrinsic_matrix(world_cam1,pixel_cam1,intrinsic_matrix)
 
-print("World Points",world_cam3)
-print("Pixel Points",pixel_cam3)
+print("World Points",world_cam2)
+print("Pixel Points",pixel_cam2)
 print("Extrinsic matrix:", extrinsic_matrix)
 
 
 # Save the extrinsic matrix for later use
-pickle.dump(extrinsic_matrix, open("extrinsic_matrix_cam3.pkl", "wb"))
+pickle.dump(extrinsic_matrix, open("extrinsic_matrix_cam1.pkl", "wb"))
 
 

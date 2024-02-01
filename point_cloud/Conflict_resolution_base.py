@@ -107,7 +107,8 @@ def follow_the_path(bg,path_1,path_2,size_x,size_y,spacing):
     Eps=0.6
     Min_samples=10
 
-    while counter<200:      
+    while counter<200: 
+     
       point_cloud1,object_1,position_1,ajust_angle_1=object_movement(path_1,object=object_1,position=position_1,ajust_angle=ajust_angle_1,teta_e=teta_e,Eps=Eps,Min_samples=Min_samples)
       point_cloud2,object_2,position_2,ajust_angle_2=object_movement(path_2,object=object_2,position=position_2,ajust_angle=ajust_angle_2,teta_e=teta_e,Eps=Eps,Min_samples=Min_samples)
       

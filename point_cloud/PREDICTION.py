@@ -364,7 +364,7 @@ all_visualizations, bbox_info = centroid_and_box(combined_cloud, cluster_labels,
 
 #____________________________________PREDICTION CODE_______________________________________#
 
-
+print("bbox_info",bbox_info)
 
 def dist_to_pos(current_position, distance, pointing_direction):
     """
@@ -457,7 +457,7 @@ def predicted_bbox(bbox_info,velocity=2,angle=5,delta_t=0.3,box_color=[1,0,0]):
     return all,bbox_updated
 
 all_visualizations_2,bbox_info_2=predicted_bbox(bbox_info)
-#print("BBOX_INFO_2",bbox_info_2)
+print("BBOX_INFO_2",bbox_info_2)
 print("Original bbox",bbox_info[0])
 
 all_visualizations_3,bbox_info_3=predicted_bbox(bbox_info,delta_t=0.6,box_color=[0.7,0.3,0])

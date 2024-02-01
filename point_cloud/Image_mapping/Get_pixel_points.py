@@ -7,7 +7,7 @@ def mouse_click(event, x, y, flags, param):
         print(f"Clicked at coordinates (x={variable*x}, y={variable*y}). Pixel value: {pixel_value}")
 
 # Load the image
-img = cv2.imread("cam_1_extrinsic.jpg")
+img = cv2.imread("cam_3_extrinsic.jpg")
 
 # Check if the image is loaded successfully
 if img is None:

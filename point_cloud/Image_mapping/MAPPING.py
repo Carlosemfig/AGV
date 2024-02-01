@@ -12,7 +12,7 @@ with open("cameraMatrix.pkl", "rb") as file:
 with open("dist.pkl", "rb") as file:
     dist = pickle.load(file)
 
-with open("extrinsic_matrix_cam3.pkl", "rb") as file:
+with open("extrinsic_matrix_cam1.pkl", "rb") as file:
     extrinsic_matrix = pickle.load(file)
 
 # Now you can use cameraMatrix and dist in your code
@@ -26,20 +26,20 @@ image_resolution=(1080, 1920)
 #image_resolution=(640,360)
 
 Lidar_1=[0, 0, 0]
-Lidar_2=[1.38, 1.11, 0]
-Lidar_3=[2.05, -0.95, 0]
+Lidar_2=[1.29, 1.07, 0]
+Lidar_3=[1.99, -0.75, 0]
  
-Cam_1=[0.05, 0.89, -0.17]
-Cam_2=[-0.03, -0.81, -0.17]
-Cam_3=[2.80, 0.95, -0.17]
+Cam_1=[0, 0.89, -0.17]
+Cam_2=[0, -0.81, -0.17]
+Cam_3=[2.55, 0.95, -0.17]
  
 Peluche=[2.31, 0, -0.10]
 
 
 
 
-center = Peluche
-side_length = 0.3
+center = Cam_3
+side_length = 0.2
 
 
 
@@ -90,13 +90,13 @@ def map_to_pixel(map_coordinates, extrinsic_matrix, cam_matrix):
 
 
 
-"""
 
-first=map_to_pixel(Lidar_1,extrinsic_matrix,intrinsic_matrix)
-second = map_to_pixel(Cam_2, extrinsic_matrix, intrinsic_matrix)
-third = map_to_pixel(Peluche, extrinsic_matrix, intrinsic_matrix)
-fourth = map_to_pixel(Cam_1, extrinsic_matrix, intrinsic_matrix)
-"""
+
+first=map_to_pixel(Lidar_2,extrinsic_matrix,intrinsic_matrix)
+second = map_to_pixel(Cam_3, extrinsic_matrix, intrinsic_matrix)
+third = map_to_pixel(Lidar_3, extrinsic_matrix, intrinsic_matrix)
+fourth = map_to_pixel(Peluche, extrinsic_matrix, intrinsic_matrix)
+
 
 
 def get_cube_vertices(center, side_length):
@@ -158,7 +158,7 @@ pixel_coordinates_array = vertices_to_pixels(vertices,extrinsic_matrix,intrinsic
 # Load the image to visualize the resulting pixels
 #in red the known points
 #in green the cube points
-image_path = "cam_3_extrinsic.jpg"
+image_path = "cam_1_extrinsic.jpg"
 output_frame = cv2.imread(image_path)
 output_frame_copy = cv2.imread(image_path)
 print(type(output_frame))
@@ -170,7 +170,7 @@ for pixel_coordinates in pixel_coordinates_array:
     x, y = map(int, pixel_coordinates)
     cv2.circle(output_frame, (x, y), 5, (0, 255, 0), -1)  # Green circle with radius 5
 
-"""#Draw the red points in the image
+#Draw the red points in the image
 red_circles = [first, second, third, fourth]
 for pixel_coordinates in red_circles:
     # Round to integers as pixel coordinates must be integers
@@ -178,7 +178,7 @@ for pixel_coordinates in red_circles:
     print("COORDENADAS",x,y)
     cv2.circle(output_frame, (x, y), 5, (0, 0, 255), -1)  # Red circle with radius 5
 
-"""
+
 def find_min_max_coordinates(points):
     """
     Funstion to find the min and max bound in both direction to include all the pixels that corresponds to the vertices of the box.

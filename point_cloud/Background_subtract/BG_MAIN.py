@@ -7,6 +7,72 @@ from sklearn.neighbors import LocalOutlierFactor
 import open3d as o3d
 import matplotlib.pyplot as plt
 from pygroundsegmentation import GroundPlaneFitting
+import json
+import statistics
+
+
+
+def get_2dboxes_from_json(json_name):
+    with open(json_name) as json_file:
+        data = json.load(json_file)
+
+    boxes = {}
+    box_id_counter = 0
+
+    for feature in data['features']:
+        coordinates = feature['geometry']['coordinates'][0]
+        # Assuming the coordinates are in the format [x, y], extract x and y values
+        x_values = [coord[0] for coord in coordinates]
+        y_values = [coord[1] for coord in coordinates]
+        
+        corners= list(zip(x_values, y_values))
+        corners.pop()
+        boxes[box_id_counter] = corners
+
+        # Increment box_id for the next box
+        box_id_counter += 1
+    return boxes
+
+
+
+def transform_2d_to_3d(boxes_dict,base=-2,height=2):
+    new_boxes={}
+    for box_id, corners in boxes_dict.items():
+        # Convert 2D corners to 3D corners
+
+        corners_scaled = [(coord[0], coord[1]) for coord in corners]
+
+        corners_3d = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1))*base))
+        corners_top = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1)) * height))
+        final_corners=np.vstack((corners_3d, corners_top))
+        new_boxes[box_id] = final_corners
+    return new_boxes
+
+
+def create_3d_bboxes(new_boxes_dict, line_color=[0.0, 1.0, 0.0]):
+    geometries = []
+    multiplier=1
+    for box_id, corners in new_boxes_dict.items():
+        # Convert 2D corners to 3D corners
+        print("corners",corners)
+        corners_scaled = [(coord[0] * multiplier, coord[1] * multiplier) for coord in corners]
+
+        corners_3d = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1))))
+        corners_top = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1))))
+
+        # Create 3D line sets for the bounding box edges
+        lines = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]
+        line_set = o3d.geometry.LineSet()
+        line_set.points = o3d.utility.Vector3dVector(corners)
+        line_set.lines = o3d.utility.Vector2iVector(lines)
+
+        # Set color and thickness
+        line_set.colors = o3d.utility.Vector3dVector(np.tile(np.array(line_color), (len(lines), 1)))
+        
+        geometries.append(line_set)
+
+    return geometries
+
 
 def loadFileToArray(file_path):
     """
@@ -103,6 +169,22 @@ def calculateMinAndMaxPoints(ndarray):
 
     return minAndMaxList
 
+def most_common_z_value(points):
+    """
+    Find the most common Z value in an array of 3D points.
+
+    Parameters:
+    - points (np.ndarray): Array of 3D points, each row representing [x, y, z]
+
+    Returns:
+    - float: Most common Z value
+    """
+    #z_values = points[:, 2]  # Extract the Z values from the array
+    z_values = np.round(points[:, 2], decimals=1)
+    print(z_values)
+    most_common_z = statistics.mode(z_values)
+    print("mais commum",most_common_z)
+    return most_common_z
 
 def remove_ground_plane(ndarray,groundThresholder):
     """
@@ -117,11 +199,34 @@ def remove_ground_plane(ndarray,groundThresholder):
     """
     
     # Find indices of points below the ground threshold
-    ground_indices = np.where(ndarray[:, 2] >= groundThresholder)[0] 
+    ground_indices = np.where(ndarray[:, 2] > groundThresholder)[0] 
     # Extract ground points using the indices
     ground_points = ndarray[ground_indices]
 
     return ground_points
+
+
+
+def remove_celling_plane(ndarray,cellingThresholder):
+    """
+    Remove ground plane points.
+ 
+    Parameters:
+    - ndarray: Array of 3D points, each row representing [x, y, z]
+    - groundThresholder: value in the Z dimension in wich all points below will be deleted
+ 
+    Returns:
+    - ground_points: Array of unique points, without the points bellow the threshold
+    """
+    
+    # Find indices of points below the ground threshold
+    ground_indices = np.where(ndarray[:, 2] < cellingThresholder)[0] 
+    # Extract ground points using the indices
+    ground_points = ndarray[ground_indices]
+
+    return ground_points
+
+
 
 def voxelization(array,size=0.01):
     pcd = o3d.geometry.PointCloud()
@@ -177,6 +282,42 @@ def points_outside_all_voxels(points, voxel_grid):
     points_outside_voxels = points[~included_points_array]
     
     return points_outside_voxels
+
+def points_outside_all_boxes(points, boxes):
+    """
+    Check if each point in an array is outside all specified boxes.
+
+    Parameters:
+    - points (np.ndarray): Array of 3D points, each row representing [x, y, z]
+    - boxes (dict): Dictionary of boxes, where keys are box indices and values are arrays representing the corners of the boxes
+
+    Returns:
+    - np.ndarray: Array of points that are not inside any box
+    """
+    queries = np.array(points)
+    points_inside_boxes = np.zeros(len(queries), dtype=bool)
+
+    for box_index, box_corners in boxes.items():
+        # Convert box_corners to a numpy array for easier manipulation
+        box_corners = np.array(box_corners)
+
+        # Extract min and max coordinates for each dimension
+        min_coords = np.min(box_corners, axis=0)
+        max_coords = np.max(box_corners, axis=0)
+
+        # Check if each point is inside the current box
+        inside_box_mask = np.all((queries >= min_coords) & (queries <= max_coords), axis=1)
+
+        # Update points_inside_boxes to mark points inside any box as True
+        points_inside_boxes |= inside_box_mask
+
+    # Find points that are not inside any box
+    points_outside_boxes = queries[~points_inside_boxes]
+
+    return points_outside_boxes
+
+
+
 
 
 
@@ -272,6 +413,18 @@ def voxel_centers(voxel_grid):
     return voxel_centers_reshaped
 
 
+
+def subtract_fences(obj,bboxes,treshold):
+    obj=remove_duplicate_points(obj)
+
+    min_and_max_point_list=calculateMinAndMaxPoints(obj)
+
+    groundThresholder = min_and_max_point_list[5] + treshold
+
+    obj = remove_ground_plane(obj,groundThresholder)
+    result = points_outside_all_boxes(obj, bboxes)
+    return result
+
 def subtract_bg(obj,bg_voxel,treshold):
     """
     A function that given a array and a voxel model of the background,
@@ -288,10 +441,69 @@ def subtract_bg(obj,bg_voxel,treshold):
 
     obj=remove_duplicate_points(obj)
 
-    min_and_max_point_list=calculateMinAndMaxPoints(obj)
+    most_common_z=most_common_z_value(obj)
 
-    groundThresholder = min_and_max_point_list[5] + treshold
+    groundThresholder = most_common_z+ treshold
 
     obj = remove_ground_plane(obj,groundThresholder)
     result = points_outside_all_voxels(obj, bg_voxel)
     return result
+
+def final_subtraction(obj,bboxes,bg_voxel,treshold):
+    obj=remove_duplicate_points(obj)
+
+    most_common_z=most_common_z_value(obj)
+    groundThresholder = most_common_z+ treshold
+
+    obj = remove_ground_plane(obj,groundThresholder)
+
+    result = points_outside_all_boxes(obj, bboxes)
+
+    result = points_outside_all_voxels(result, bg_voxel)
+
+    return result
+
+
+
+
+def get_fences(json_name,base=-2,top=2):
+    with open(json_name) as json_file:
+        data = json.load(json_file)
+
+    boxes = {}
+    box_id_counter = 0
+
+    for feature in data['features']:
+        coordinates = feature['geometry']['coordinates'][0]
+        # Assuming the coordinates are in the format [x, y], extract x and y values
+        x_values = [coord[0] for coord in coordinates]
+        y_values = [coord[1] for coord in coordinates]
+        
+        corners= list(zip(x_values, y_values))
+        corners.pop()
+        corners_scaled = [(coord[0], coord[1]) for coord in corners]
+
+        corners_3d = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1))*base))
+        corners_top = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1)) * top))
+        final_corners=np.vstack((corners_3d, corners_top))
+
+        boxes[box_id_counter] = final_corners
+
+        # Increment box_id for the next box
+        box_id_counter += 1
+    return boxes
+
+
+
+def transform_2d_to_3d(boxes_dict,base=-2,height=2):
+    new_boxes={}
+    for box_id, corners in boxes_dict.items():
+        # Convert 2D corners to 3D corners
+
+        corners_scaled = [(coord[0], coord[1]) for coord in corners]
+
+        corners_3d = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1))*base))
+        corners_top = np.hstack((np.array(corners_scaled), np.ones((len(corners_scaled), 1)) * height))
+        final_corners=np.vstack((corners_3d, corners_top))
+        new_boxes[box_id] = final_corners
+    return new_boxes
